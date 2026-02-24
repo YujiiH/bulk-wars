@@ -1,0 +1,16 @@
+services:
+  # ── BACKEND (WebSocket server) ────────────────────────────────────────────
+  - type: web
+    name: bulk-wars-server
+    runtime: node
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: ALLOWED_ORIGINS
+        value: https://bulk-wars.vercel.app  # ← change to your Vercel URL
+    plan: free
+
+  # Note: Frontend is deployed on Vercel (see vercel.json)
