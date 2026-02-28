@@ -480,7 +480,7 @@ export default function App() {
                   {myTeam === "green" ? "▲ TEAM GREEN" : "▼ TEAM RED"} · {myTeam === "green" ? myClicks.green : myClicks.red} CLICKS
                 </span>
               ) : (
-                <span style={{ fontSize: 9, color: "#ff174466", letterSpacing: 2 }}>👁 SPECTATING — CHOOSE A TEAM NEXT ROUND</span>
+                <span style={{ fontSize: 12, color: "#f59e0b", letterSpacing: 3, fontWeight: 800, background: "rgba(245,158,11,0.12)", border: "1px solid #f59e0baa", padding: "6px 18px", borderRadius: 2, animation: "blink 2s infinite" }}>⚠ SPECTATING — SELECT YOUR TEAM NEXT ROUND</span>
               )}
             </div>
 
