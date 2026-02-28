@@ -130,7 +130,8 @@ function endRound() {
   // Seal last partial candle
   sealCandle();
 
-  const { green, red } = state.score;
+  const green = state.totalGreen;
+  const red   = state.totalRed;
   state.winner = green > red ? "green" : red > green ? "red" : "draw";
   state.phase  = "results";
 
