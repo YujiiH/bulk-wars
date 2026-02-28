@@ -7,6 +7,43 @@ const MAX_VISIBLE_CANDLES = 30;
 // ── SOCKET ────────────────────────────────────────────────────────────────────
 const socket = io(SERVER_URL, { autoConnect: true, reconnectionDelay: 1000 });
 
+// ── STARS ─────────────────────────────────────────────────────────────────────
+function Stars() {
+  const [stars, setStars] = useState([]);
+
+  useEffect(() => {
+    const spawn = () => {
+      const id = Date.now() + Math.random();
+      const x = Math.random() * 100;
+      const y = Math.random() * 100;
+      const size = Math.random() * 10 + 8;
+      const duration = Math.random() * 1500 + 800;
+      setStars(prev => [...prev.slice(-30), { id, x, y, size, duration }]);
+      setTimeout(() => setStars(prev => prev.filter(s => s.id !== id)), duration);
+    };
+    const iv = setInterval(spawn, 300);
+    return () => clearInterval(iv);
+  }, []);
+
+  return (
+    <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 1, overflow: "hidden" }}>
+      {stars.map(s => (
+        <div key={s.id} style={{
+          position: "absolute",
+          left: `${s.x}%`, top: `${s.y}%`,
+          fontSize: s.size,
+          color: "rgba(255,255,255,0.6)",
+          animation: `starPop ${s.duration}ms ease-in-out forwards`,
+          transform: "translate(-50%, -50%)",
+          lineHeight: 1,
+        }}>✦</div>
+      ))}
+    </div>
+  );
+}
+
+
+
 // ── CHART ─────────────────────────────────────────────────────────────────────
 function CandleChart({ candles, liveCandle, width = 800, height = 280 }) {
   const all = liveCandle ? [...candles, { ...liveCandle, isCurrent: true }] : candles;
@@ -321,6 +358,8 @@ export default function App() {
         backgroundSize: "48px 48px",
       }} />
       <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 1, background: "repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.02) 2px,rgba(0,0,0,0.02) 4px)" }} />
+      {/* Stars */}
+      <Stars />
       {/* BULK CONTRIBUTOR badge */}
       <div style={{
         position: "fixed", bottom: 110, right: 16, zIndex: 50,
@@ -585,6 +624,7 @@ export default function App() {
 
       <style>{`
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+        @keyframes starPop { 0%{opacity:0;transform:translate(-50%,-50%) scale(0.3)} 30%{opacity:0.9;transform:translate(-50%,-50%) scale(1.1)} 70%{opacity:0.7;transform:translate(-50%,-50%) scale(1)} 100%{opacity:0;transform:translate(-50%,-50%) scale(0.5)} }
         @keyframes rippleOut { 0%{width:8px;height:8px;margin-left:-4px;margin-top:-4px;opacity:1} 100%{width:220px;height:220px;margin-left:-110px;margin-top:-110px;opacity:0} }
         @keyframes fadeInDown { from{opacity:0;transform:translateX(-50%) translateY(-10px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
         button:active { transform: scale(0.98); }
