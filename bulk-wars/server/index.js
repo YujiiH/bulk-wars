@@ -23,7 +23,7 @@ const io = new Server(server, {
 // ── CONSTANTS ─────────────────────────────────────────────────────────────────
 const ROUND_DURATION   = 120_000; // 2 min
 const CANDLE_DURATION  =  10_000; // 10s per candle
-const LOBBY_DURATION   =  15_000; // 15s lobby between rounds
+const LOBBY_DURATION   =  10_000; // 10s lobby between rounds
 const CLICK_IMPACT     = 0.02;    // $ per click
 const MAX_CLICKS_PER_SECOND = 8;  // rate limit per socket
 const STARTING_PRICE   = 178.50;
