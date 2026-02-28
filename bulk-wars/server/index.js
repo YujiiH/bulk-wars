@@ -21,7 +21,7 @@ const io = new Server(server, {
 });
 
 // ── CONSTANTS ─────────────────────────────────────────────────────────────────
-const ROUND_DURATION   = 120_000; // 2 min
+const ROUND_DURATION   =  60_000; // 1 min
 const CANDLE_DURATION  =  10_000; // 10s per candle
 const LOBBY_DURATION   =  10_000; // 10s lobby between rounds
 const CLICK_IMPACT     = 0.02;    // $ per click
@@ -111,7 +111,7 @@ function sealCandle() {
   if (candle.isGreen) state.score.green++;
   else                state.score.red++;
 
-  io.emit("candle_sealed", { candle, score: state.score });
+  io.emit("candle_sealed", { candles: state.candles, candle, score: state.score, newOpen: state.price });
 
   // Reset candle state
   state.candleOpen  = state.price;
