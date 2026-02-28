@@ -152,7 +152,7 @@ function PseudoModal({ onConfirm }) {
 
 
 // ── COUNTDOWN INLINE ─────────────────────────────────────────────────────────
-function CountdownInline({ endsAt }) {
+function CountdownInline({ endsAt, label }) {
   const [ms, setMs] = useState(Math.max(0, (endsAt || 0) - Date.now()));
   useEffect(() => {
     const iv = setInterval(() => setMs(Math.max(0, (endsAt || 0) - Date.now())), 100);
@@ -318,7 +318,7 @@ export default function App() {
         setMyClicks({ green: 0, red: 0 });
         setNeedTeamSelect(true);
       }
-      setGame(prev => ({ ...prev, phase: data.phase, winner: data.winner, score: data.score, candles: data.candles || prev?.candles || [] }));
+      setGame(prev => ({ ...prev, phase: data.phase, winner: data.winner, score: data.score, candles: data.candles || prev?.candles || [], resultsEndsAt: data.resultsEndsAt || null }));
       setLiveCandle(null);
     });
     socket.on("tick", (data) => {
@@ -383,7 +383,7 @@ export default function App() {
     </div>
   );
 
-  const { phase, score, candles = [], players, winner, roundEndsAt, candleEndsAt, lobbyEndsAt,
+  const { phase, score, candles = [], players, winner, roundEndsAt, candleEndsAt, lobbyEndsAt, resultsEndsAt,
     price = 178.5, totalGreen = 0, totalRed = 0, candleGreen = 0, candleRed = 0 } = game;
   const candlePct  = candleGreen + candleRed > 0 ? (candleGreen / (candleGreen + candleRed)) * 100 : 50;
   const totalScore = score.green + score.red;
@@ -501,7 +501,8 @@ export default function App() {
                 {pseudo} · YOUR CLICKS: {myTeam === "green" ? myClicks.green : myClicks.red}
               </div>
             )}
-            <div style={{ fontSize: 9, color: "#225", letterSpacing: 3, marginTop: 8 }}>NEXT ROUND STARTING SOON...</div>
+            {resultsEndsAt && <CountdownInline endsAt={resultsEndsAt} label="NEXT ROUND IN" />}
+            <div style={{ fontSize: 9, color: "#225", letterSpacing: 3, marginTop: 4 }}>NEXT ROUND STARTING SOON...</div>
           </div>
         )}
 
