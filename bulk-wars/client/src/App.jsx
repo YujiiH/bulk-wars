@@ -149,6 +149,41 @@ function PseudoModal({ onConfirm }) {
   );
 }
 
+
+// ── TEAM SELECT MODAL ─────────────────────────────────────────────────────────
+function TeamSelectModal({ pseudo, onConfirm }) {
+  const [selected, setSelected] = useState(null);
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 400, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.85)", backdropFilter: "blur(6px)" }}>
+      <div style={{ background: "#060e0a", border: "1px solid #00c85366", borderRadius: 4, padding: "36px 40px", textAlign: "center", fontFamily: "'JetBrains Mono', monospace", maxWidth: 420, width: "90%" }}>
+        <div style={{ fontSize: 9, letterSpacing: 6, color: "#445", marginBottom: 4 }}>WELCOME, {pseudo}</div>
+        <div style={{ fontSize: 22, fontWeight: 900, letterSpacing: 4, color: "#e0e8f0", marginBottom: 6 }}>CHOOSE YOUR TEAM</div>
+        <div style={{ fontSize: 9, color: "#334", letterSpacing: 3, marginBottom: 28 }}>YOUR SIDE FOR THIS ROUND</div>
+        <div style={{ display: "flex", gap: 24, justifyContent: "center" }}>
+          <button onClick={() => setSelected("green")} style={{ padding: "20px 28px", border: selected === "green" ? "2px solid #00c853" : "1px solid #00c85333", borderRadius: 2, background: selected === "green" ? "rgba(0,200,83,0.15)" : "transparent", cursor: "pointer", fontFamily: "inherit", transition: "all 0.2s", transform: selected === "green" ? "scale(1.05)" : "scale(1)" }}>
+            <div style={{ fontSize: 28, marginBottom: 8 }}>▲</div>
+            <div style={{ fontSize: 11, color: "#00c853", letterSpacing: 3, fontWeight: 800 }}>TEAM GREEN</div>
+            <div style={{ fontSize: 9, color: "#334", marginTop: 4 }}>PUSH PRICE UP</div>
+            {selected === "green" && <div style={{ fontSize: 9, color: "#00c853", marginTop: 6, letterSpacing: 2 }}>✓ SELECTED</div>}
+          </button>
+          <button onClick={() => setSelected("red")} style={{ padding: "20px 28px", border: selected === "red" ? "2px solid #ff1744" : "1px solid #ff174433", borderRadius: 2, background: selected === "red" ? "rgba(255,23,68,0.15)" : "transparent", cursor: "pointer", fontFamily: "inherit", transition: "all 0.2s", transform: selected === "red" ? "scale(1.05)" : "scale(1)" }}>
+            <div style={{ fontSize: 28, marginBottom: 8 }}>▼</div>
+            <div style={{ fontSize: 11, color: "#ff1744", letterSpacing: 3, fontWeight: 800 }}>TEAM RED</div>
+            <div style={{ fontSize: 9, color: "#334", marginTop: 4 }}>PUSH PRICE DOWN</div>
+            {selected === "red" && <div style={{ fontSize: 9, color: "#ff1744", marginTop: 6, letterSpacing: 2 }}>✓ SELECTED</div>}
+          </button>
+        </div>
+        <button
+          onClick={() => selected && onConfirm(selected)}
+          style={{ marginTop: 24, width: "100%", padding: "12px", background: selected ? (selected === "green" ? "rgba(0,200,83,0.15)" : "rgba(255,23,68,0.15)") : "rgba(255,255,255,0.04)", border: selected ? `1px solid ${selected === "green" ? "#00c853" : "#ff1744"}44` : "1px solid #111", borderRadius: 2, color: selected ? (selected === "green" ? "#00c853" : "#ff1744") : "#334", fontFamily: "'JetBrains Mono', monospace", fontSize: 11, letterSpacing: 4, cursor: selected ? "pointer" : "default", transition: "all 0.2s" }}
+        >
+          {selected ? "JOIN THE BATTLE →" : "SELECT A TEAM FIRST"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── CHART ─────────────────────────────────────────────────────────────────────
 function CandleChart({ candles, liveCandle }) {
   const all = liveCandle ? [...candles, { ...liveCandle, isCurrent: true }] : candles;
@@ -251,6 +286,7 @@ export default function App() {
   const [myTeam, setMyTeam]                 = useState(null);
   const [pseudo, setPseudo]                 = useState(null);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [needTeamSelect, setNeedTeamSelect] = useState(false);
 
   useEffect(() => {
     socket.on("connect",    () => setConnected(true));
@@ -263,6 +299,7 @@ export default function App() {
       if (data.phase === "lobby") {
         setMyTeam(null);
         setMyClicks({ green: 0, red: 0 });
+        setNeedTeamSelect(true);
       }
       setGame(prev => ({ ...prev, phase: data.phase, winner: data.winner, score: data.score, candles: data.candles || prev?.candles || [] }));
       setLiveCandle(null);
@@ -316,7 +353,7 @@ export default function App() {
         <div style={{ position: "fixed", inset: 0, backgroundImage: "url(https://i.imgur.com/IFdJQzc.jpeg)", backgroundSize: "cover", backgroundPosition: "center", opacity: 0.18 }} />
         <Stars />
       </div>
-      <PseudoModal onConfirm={p => setPseudo(p)} />
+      <PseudoModal onConfirm={p => { setPseudo(p); setNeedTeamSelect(true); }} />
     </>
   );
 
@@ -344,6 +381,7 @@ export default function App() {
 
       <Stars />
       <VictoryPopup winner={winner} />
+      {needTeamSelect && <TeamSelectModal pseudo={pseudo} onConfirm={t => { setMyTeam(t); setNeedTeamSelect(false); }} />}
       {showLeaderboard && <LeaderboardPanel onClose={() => setShowLeaderboard(false)} />}
 
       {notification && (
