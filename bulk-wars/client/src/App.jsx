@@ -150,15 +150,32 @@ function PseudoModal({ onConfirm }) {
 }
 
 
+
+// ── COUNTDOWN INLINE ─────────────────────────────────────────────────────────
+function CountdownInline({ endsAt }) {
+  const [ms, setMs] = useState(Math.max(0, (endsAt || 0) - Date.now()));
+  useEffect(() => {
+    const iv = setInterval(() => setMs(Math.max(0, (endsAt || 0) - Date.now())), 100);
+    return () => clearInterval(iv);
+  }, [endsAt]);
+  const s = Math.ceil(ms / 1000);
+  return (
+    <div style={{ marginBottom: 20, fontSize: 11, letterSpacing: 3, color: s <= 3 ? "#ff1744" : "#f59e0b", fontWeight: 800, animation: s <= 3 ? "blink 0.5s infinite" : "none" }}>
+      ⏱ NEXT ROUND IN {s}s
+    </div>
+  );
+}
+
 // ── TEAM SELECT MODAL ─────────────────────────────────────────────────────────
-function TeamSelectModal({ pseudo, onConfirm }) {
+function TeamSelectModal({ pseudo, lobbyEndsAt, onConfirm }) {
   const [selected, setSelected] = useState(null);
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 400, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.85)", backdropFilter: "blur(6px)" }}>
       <div style={{ background: "#060e0a", border: "1px solid #00c85366", borderRadius: 4, padding: "36px 40px", textAlign: "center", fontFamily: "'JetBrains Mono', monospace", maxWidth: 420, width: "90%" }}>
         <div style={{ fontSize: 9, letterSpacing: 6, color: "#445", marginBottom: 4 }}>WELCOME, {pseudo}</div>
         <div style={{ fontSize: 22, fontWeight: 900, letterSpacing: 4, color: "#e0e8f0", marginBottom: 6 }}>CHOOSE YOUR TEAM</div>
-        <div style={{ fontSize: 9, color: "#334", letterSpacing: 3, marginBottom: 28 }}>YOUR SIDE FOR THIS ROUND</div>
+        <div style={{ fontSize: 9, color: "#334", letterSpacing: 3, marginBottom: 12 }}>YOUR SIDE FOR THIS ROUND</div>
+        {lobbyEndsAt && <CountdownInline endsAt={lobbyEndsAt} />}
         <div style={{ display: "flex", gap: 24, justifyContent: "center" }}>
           <button onClick={() => setSelected("green")} style={{ padding: "20px 28px", border: selected === "green" ? "2px solid #00c853" : "1px solid #00c85333", borderRadius: 2, background: selected === "green" ? "rgba(0,200,83,0.15)" : "transparent", cursor: "pointer", fontFamily: "inherit", transition: "all 0.2s", transform: selected === "green" ? "scale(1.05)" : "scale(1)" }}>
             <div style={{ fontSize: 28, marginBottom: 8 }}>▲</div>
@@ -381,7 +398,7 @@ export default function App() {
 
       <Stars />
       <VictoryPopup winner={winner} />
-      {needTeamSelect && <TeamSelectModal pseudo={pseudo} onConfirm={t => { setMyTeam(t); setNeedTeamSelect(false); }} />}
+      {needTeamSelect && <TeamSelectModal pseudo={pseudo} lobbyEndsAt={game?.lobbyEndsAt} onConfirm={t => { setMyTeam(t); setNeedTeamSelect(false); }} />}
       {showLeaderboard && <LeaderboardPanel onClose={() => setShowLeaderboard(false)} />}
 
       {notification && (
@@ -402,7 +419,7 @@ export default function App() {
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <span style={{ fontSize: 14, fontWeight: 900, letterSpacing: 4, color: "#e0e8f0" }}>BULK WARS</span>
             <a href={TWITTER_URL} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 4, padding: "3px 8px", border: "1px solid #f59e0b", borderRadius: 2, textDecoration: "none", background: "rgba(245,158,11,0.08)" }}>
-              <span style={{ fontSize: 9, color: "#f59e0b", letterSpacing: 2, fontWeight: 700 }}>✦ @YujiiroHamna</span>
+              <span style={{ fontSize: 9, color: "#f59e0b", letterSpacing: 2, fontWeight: 700 }}>✦ By @YujiiroHamna</span>
             </a>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
