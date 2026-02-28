@@ -11,11 +11,11 @@ const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(",")
   : ["http://localhost:5173", "http://localhost:3000"];
 
-app.use(cors({ origin: ALLOWED_ORIGINS }));
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 
 const io = new Server(server, {
-  cors: { origin: ALLOWED_ORIGINS, methods: ["GET", "POST"] },
+  cors: { origin: true, methods: ["GET", "POST"], credentials: true },
   pingTimeout: 20000,
   pingInterval: 10000,
 });
