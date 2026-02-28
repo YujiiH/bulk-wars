@@ -163,6 +163,7 @@ export default function App() {
   const [lastTeam, setLastTeam] = useState(null);
   const [myClicks, setMyClicks] = useState({ green: 0, red: 0 });
   const [notification, setNotification] = useState(null);
+  const [myTeam, setMyTeam] = useState(null); // null | "green" | "red"
 
   // ── SOCKET LISTENERS ──────────────────────────────────────────────────────
   useEffect(() => {
@@ -181,6 +182,7 @@ export default function App() {
     });
 
     socket.on("lobby", (data) => {
+      setMyTeam(null);
       setGame(prev => ({ ...prev, phase: "lobby", ...data, candles: [], score: { green: 0, red: 0 }, winner: null }));
       setLiveCandle(null);
       setMyClicks({ green: 0, red: 0 });
@@ -259,6 +261,7 @@ export default function App() {
   // ── CLICK HANDLER ─────────────────────────────────────────────────────────
   const handleClick = useCallback((team) => {
     if (!game || game.phase !== "battle") return;
+    if (myTeam && myTeam !== team) return;
     socket.emit("click", { team });
     setLastTeam(team);
     setMyClicks(prev => ({ ...prev, [team]: prev[team] + 1 }));
@@ -392,16 +395,36 @@ export default function App() {
               </div>
             </div>
             <div style={{ display: "flex", gap: 40 }}>
-              <div style={{ textAlign: "center", padding: "16px 24px", border: "1px solid #00c85333", borderRadius: 2 }}>
-                <div style={{ fontSize: 28, marginBottom: 6 }}>▲</div>
-                <div style={{ fontSize: 10, color: "#00c853", letterSpacing: 3 }}>TEAM GREEN</div>
+              <button
+                onClick={() => setMyTeam(myTeam === "green" ? null : "green")}
+                style={{
+                  textAlign: "center", padding: "20px 32px",
+                  border: myTeam === "green" ? "2px solid #00c853" : "1px solid #00c85333",
+                  borderRadius: 2, background: myTeam === "green" ? "rgba(0,200,83,0.15)" : "transparent",
+                  cursor: "pointer", fontFamily: "inherit", transition: "all 0.2s",
+                  transform: myTeam === "green" ? "scale(1.05)" : "scale(1)",
+                }}
+              >
+                <div style={{ fontSize: 32, marginBottom: 8 }}>▲</div>
+                <div style={{ fontSize: 11, color: "#00c853", letterSpacing: 3, fontWeight: 800 }}>TEAM GREEN</div>
                 <div style={{ fontSize: 9, color: "#334", marginTop: 4 }}>PUSH PRICE UP</div>
-              </div>
-              <div style={{ textAlign: "center", padding: "16px 24px", border: "1px solid #ff174433", borderRadius: 2 }}>
-                <div style={{ fontSize: 28, marginBottom: 6 }}>▼</div>
-                <div style={{ fontSize: 10, color: "#ff1744", letterSpacing: 3 }}>TEAM RED</div>
+                {myTeam === "green" && <div style={{ fontSize: 9, color: "#00c853", marginTop: 6, letterSpacing: 2 }}>✓ SELECTED</div>}
+              </button>
+              <button
+                onClick={() => setMyTeam(myTeam === "red" ? null : "red")}
+                style={{
+                  textAlign: "center", padding: "20px 32px",
+                  border: myTeam === "red" ? "2px solid #ff1744" : "1px solid #ff174433",
+                  borderRadius: 2, background: myTeam === "red" ? "rgba(255,23,68,0.15)" : "transparent",
+                  cursor: "pointer", fontFamily: "inherit", transition: "all 0.2s",
+                  transform: myTeam === "red" ? "scale(1.05)" : "scale(1)",
+                }}
+              >
+                <div style={{ fontSize: 32, marginBottom: 8 }}>▼</div>
+                <div style={{ fontSize: 11, color: "#ff1744", letterSpacing: 3, fontWeight: 800 }}>TEAM RED</div>
                 <div style={{ fontSize: 9, color: "#334", marginTop: 4 }}>PUSH PRICE DOWN</div>
-              </div>
+                {myTeam === "red" && <div style={{ fontSize: 9, color: "#ff1744", marginTop: 6, letterSpacing: 2 }}>✓ SELECTED</div>}
+              </button>
             </div>
             <div style={{ fontSize: 9, color: "#222", letterSpacing: 3 }}>
               {players} PLAYERS WAITING · 2 MIN ROUNDS · 10s CANDLES
@@ -465,11 +488,15 @@ export default function App() {
               <TimerBar endsAt={candleEndsAt} duration={10000} color="#00ff7844" />
             </div>
 
-            {/* My clicks info */}
+            {/* My team info */}
             <div style={{ display: "flex", justifyContent: "center", gap: 24, padding: "2px 20px", flexShrink: 0 }}>
-              <span style={{ fontSize: 9, color: "#226622", letterSpacing: 2 }}>MY CLICKS: +{myClicks.green} GREEN</span>
-              <span style={{ fontSize: 9, color: "#333" }}>·</span>
-              <span style={{ fontSize: 9, color: "#662222", letterSpacing: 2 }}>-{myClicks.red} RED</span>
+              {myTeam ? (
+                <span style={{ fontSize: 9, color: myTeam === "green" ? "#00c853" : "#ff1744", letterSpacing: 2, fontWeight: 800 }}>
+                  {myTeam === "green" ? "▲ TEAM GREEN" : "▼ TEAM RED"} · {myTeam === "green" ? myClicks.green : myClicks.red} CLICKS
+                </span>
+              ) : (
+                <span style={{ fontSize: 9, color: "#445", letterSpacing: 2 }}>NO TEAM — CLICK A BUTTON TO JOIN</span>
+              )}
             </div>
 
             {/* Battle buttons */}
@@ -481,9 +508,10 @@ export default function App() {
                   flex: 1,
                   background: lastTeam === "green" ? "rgba(0,200,83,0.22)" : "rgba(0,200,83,0.07)",
                   border: "none", borderTop: "2px solid #00c853",
-                  color: "#00c853", cursor: "pointer", fontFamily: "inherit",
+                  color: "#00c853", cursor: myTeam === "red" ? "not-allowed" : "pointer", fontFamily: "inherit",
                   transition: "background 0.08s", position: "relative", overflow: "hidden",
                   display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4,
+                  opacity: myTeam === "red" ? 0.25 : 1,
                 }}
               >
                 <span style={{ fontSize: 26, lineHeight: 1, pointerEvents: "none" }}>▲</span>
@@ -509,9 +537,10 @@ export default function App() {
                   flex: 1,
                   background: lastTeam === "red" ? "rgba(255,23,68,0.22)" : "rgba(255,23,68,0.07)",
                   border: "none", borderTop: "2px solid #ff1744",
-                  color: "#ff1744", cursor: "pointer", fontFamily: "inherit",
+                  color: "#ff1744", cursor: myTeam === "green" ? "not-allowed" : "pointer", fontFamily: "inherit",
                   transition: "background 0.08s", position: "relative", overflow: "hidden",
                   display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4,
+                  opacity: myTeam === "green" ? 0.25 : 1,
                 }}
               >
                 <span style={{ fontSize: 26, lineHeight: 1, pointerEvents: "none" }}>▼</span>
