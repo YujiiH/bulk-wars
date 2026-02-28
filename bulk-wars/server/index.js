@@ -135,10 +135,11 @@ function endRound() {
   state.winner = green > red ? "green" : red > green ? "red" : "draw";
   state.phase  = "results";
 
-  io.emit("round_end", { score: state.score, winner: state.winner, candles: state.candles });
+  const resultsEndsAt = Date.now() + 10000;
+  io.emit("round_end", { score: state.score, winner: state.winner, candles: state.candles, resultsEndsAt });
 
   // Schedule next lobby
-  setTimeout(startLobby, 8000);
+  setTimeout(startLobby, 10000);
 }
 
 function startLobby() {
