@@ -44,6 +44,77 @@ function Stars() {
 
 
 
+
+// ── VICTORY POPUP ─────────────────────────────────────────────────────────────
+function VictoryPopup({ winner }) {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (winner && winner !== "draw") {
+      setVisible(true);
+      const t = setTimeout(() => setVisible(false), 5000);
+      return () => clearTimeout(t);
+    }
+  }, [winner]);
+
+  if (!visible || !winner || winner === "draw") return null;
+
+  return (
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 200,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      pointerEvents: "none",
+      animation: "fadeInOut 5s ease forwards",
+    }}>
+      {/* Background image with color filter */}
+      <div style={{
+        position: "absolute", inset: 0,
+        backgroundImage: "url(https://i.imgur.com/w5eI4uC.jpeg)",
+        backgroundSize: "cover", backgroundPosition: "center",
+        filter: winner === "red" ? "hue-rotate(130deg) saturate(1.5)" : "none",
+        opacity: 0.55,
+      }} />
+      {/* Dark overlay */}
+      <div style={{
+        position: "absolute", inset: 0,
+        background: "rgba(0,0,0,0.45)",
+      }} />
+      {/* Text */}
+      <div style={{
+        position: "relative", textAlign: "center", zIndex: 1,
+      }}>
+        <div style={{
+          fontSize: 13, letterSpacing: 8,
+          color: winner === "green" ? "#00ff78" : "#ff1744",
+          marginBottom: 16, fontFamily: "'JetBrains Mono', monospace",
+          animation: "slideUp 0.5s ease forwards",
+        }}>
+          ROUND OVER
+        </div>
+        <div style={{
+          fontFamily: "'Bebas Neue', sans-serif",
+          fontSize: 72, letterSpacing: 6, lineHeight: 1,
+          color: winner === "green" ? "#00c853" : "#ff1744",
+          textShadow: winner === "green"
+            ? "0 0 40px rgba(0,200,83,0.8), 0 0 80px rgba(0,200,83,0.4)"
+            : "0 0 40px rgba(255,23,68,0.8), 0 0 80px rgba(255,23,68,0.4)",
+          animation: "slideUp 0.5s 0.1s ease forwards", opacity: 0,
+        }}>
+          {winner === "green" ? "🟢 GREEN WINS" : "🔴 RED WINS"}
+        </div>
+        <div style={{
+          marginTop: 20, fontSize: 11, letterSpacing: 4,
+          color: "rgba(255,255,255,0.4)",
+          fontFamily: "'JetBrains Mono', monospace",
+          animation: "slideUp 0.5s 0.2s ease forwards", opacity: 0,
+        }}>
+          NEXT ROUND STARTING SOON...
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── CHART ─────────────────────────────────────────────────────────────────────
 function CandleChart({ candles, liveCandle, width = 800, height = 280 }) {
   const all = liveCandle ? [...candles, { ...liveCandle, isCurrent: true }] : candles;
@@ -360,6 +431,8 @@ export default function App() {
       <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 1, background: "repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.02) 2px,rgba(0,0,0,0.02) 4px)" }} />
       {/* Stars */}
       <Stars />
+      {/* Victory Popup */}
+      <VictoryPopup winner={winner} />
       {/* BULK CONTRIBUTOR badge */}
       <div style={{
         position: "fixed", bottom: 110, right: 16, zIndex: 50,
@@ -624,6 +697,8 @@ export default function App() {
 
       <style>{`
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+        @keyframes fadeInOut { 0%{opacity:0} 10%{opacity:1} 80%{opacity:1} 100%{opacity:0} }
+        @keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
         @keyframes starPop { 0%{opacity:0;transform:translate(-50%,-50%) scale(0.3)} 30%{opacity:0.9;transform:translate(-50%,-50%) scale(1.1)} 70%{opacity:0.7;transform:translate(-50%,-50%) scale(1)} 100%{opacity:0;transform:translate(-50%,-50%) scale(0.5)} }
         @keyframes rippleOut { 0%{width:8px;height:8px;margin-left:-4px;margin-top:-4px;opacity:1} 100%{width:220px;height:220px;margin-left:-110px;margin-top:-110px;opacity:0} }
         @keyframes fadeInDown { from{opacity:0;transform:translateX(-50%) translateY(-10px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
