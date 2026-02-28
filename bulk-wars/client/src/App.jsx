@@ -312,14 +312,26 @@ export default function App() {
       setGame(data);
       setLiveCandle(data.phase === "battle" ? { open: data.candleOpen, close: data.price, high: data.candleHigh, low: data.candleLow, isGreen: data.price >= data.candleOpen } : null);
     });
-    socket.on("phase_change", (data) => {
-      if (data.phase === "lobby") {
-        setMyTeam(null);
-        setMyClicks({ green: 0, red: 0 });
-        setNeedTeamSelect(true);
-      }
-      setGame(prev => ({ ...prev, phase: data.phase, winner: data.winner, score: data.score, candles: data.candles || prev?.candles || [], resultsEndsAt: data.resultsEndsAt || null }));
+    socket.on("lobby", (data) => {
+      setMyTeam(null);
+      setMyClicks({ green: 0, red: 0 });
+      setNeedTeamSelect(true);
       setLiveCandle(null);
+      setGame(prev => ({ ...prev, phase: "lobby", winner: null, lobbyEndsAt: data.lobbyEndsAt, candles: [], score: { green: 0, red: 0 } }));
+    });
+
+    socket.on("battle_start", (data) => {
+      setLiveCandle({ open: data.candleOpen, close: data.price, high: data.candleHigh, low: data.candleLow, isGreen: true });
+      setGame(data);
+    });
+
+    socket.on("round_end", (data) => {
+      setLiveCandle(null);
+      setGame(prev => {
+        // Save leaderboard
+        const currentTeam = prev?.myTeamRef;
+        return { ...prev, phase: "results", winner: data.winner, score: data.score, candles: data.candles, resultsEndsAt: data.resultsEndsAt };
+      });
     });
     socket.on("tick", (data) => {
       setLiveCandle({ open: data.candleOpen, close: data.price, high: data.candleHigh, low: data.candleLow, isGreen: data.price >= data.candleOpen });
@@ -337,13 +349,7 @@ export default function App() {
     return () => socket.removeAllListeners();
   }, []);
 
-  // Save leaderboard on results
-  useEffect(() => {
-    if (game?.phase === "results" && pseudo && myTeam) {
-      const clicks = myTeam === "green" ? myClicks.green : myClicks.red;
-      updateLeaderboard(pseudo, myTeam, clicks);
-    }
-  }, [game?.phase]);
+  // Leaderboard save is handled inside round_end socket listener
 
   const notify = useCallback((msg) => {
     setNotification(msg);
